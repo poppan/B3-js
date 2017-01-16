@@ -1,0 +1,91 @@
+#viewport {
+    width: 320px;
+    height: 320px;
+    overflow: hidden;
+    position: relative;
+}
+
+#viewport .player {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+}
+
+.player {
+    width: 32px;
+    height: 32px;
+    background: url(../img/player.png);
+    background-position-y: -96px;
+    transition: transform .2s linear;
+}
+
+.enemy {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20000;
+    background: #00ff00;
+    transition: all .2s ease;
+}
+
+@keyframes moving {
+    0% {
+        background-position-x: 0px;
+    }
+    100% {
+        background-position-x: -128px;
+    }
+}
+
+.player.left {
+    animation: moving .2s steps(4) infinite;
+    background-position-y: 0px;
+}
+
+.player.right {
+    animation: moving .2s steps(4) infinite;
+    background-position-y: -32px;
+}
+
+.player.top {
+    animation: moving .2s steps(4) infinite;
+    background-position-y: -64px;
+}
+
+.player.bottom {
+    animation: moving .2s steps(4) infinite;
+    background-position-y: -96px;
+}
+
+#map {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 3200px;
+    height: 3200px;
+    transition: all .2s ease;
+}
+
+#map:after {
+    clear: both;
+    display: table;
+    content: '';
+}
+
+#map > div {
+    float: left;
+    width: 32px;
+    height: 32px;
+}
+
+#map > div:nth-child(100n) {
+    clear: right;
+}
+
+.floor-0 {
+    background: #ff0000;
+}
+
+.floor-1 {
+    background: #0000ff;
+}
