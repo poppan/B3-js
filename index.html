@@ -1,0 +1,388 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link>
+    <meta charset="UTF-8">
+    <title>Poet</title>
+    <style>
+        #viewport {
+            width: 320px;
+            height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map .obj {
+            position: absolute;
+        }
+
+        .player {
+            width: 32px;
+            height: 32px;
+            background: url(img/link.png);
+            background-position-y: -96px;
+            transition: transform .3s ease;
+        }
+
+        @keyframes moving {
+            0% {
+                background-position-x: 0;
+            }
+            100% {
+                background-position-x: -160px;
+            }
+        }
+
+        .player.running {
+            animation: moving .4s steps(5) infinite;
+        }
+
+        .player.up {
+            background-position-y: 0px;
+        }
+
+        .player.left {
+            background-position-y: -32px;
+        }
+
+        .player.down {
+            background-position-y: -64px;
+        }
+
+        .player.right {
+            background-position-y: -96px;
+        }
+
+        .map {
+            position: relative;
+            left: 0;
+            top: 0;
+            transition: all .2s linear;
+        }
+
+        .map:after {
+            clear: both;
+            display: table;
+            content: '';
+        }
+
+        .map > div {
+            float: left;
+            width: 32px;
+            height: 32px;
+        }
+
+        /* FLOORS */
+        [class*='floor-'] {
+            background: url(img/grass.png);
+        }
+
+        .floor-1 {
+            background-position-x: -32px;
+        }
+
+        .floor-2 {
+            background-position-x: -64px;
+        }
+
+        .floor-3 {
+            background-position-x: -96px;
+        }
+
+        .floor-4 {
+            background-position-x: -128px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <div id="world" tabindex="1"></div>
+</div>
+
+
+<script src="js/jquery-2.1.1.min.js"></script>
+<script>
+    $(function() {
+
+        // ------------------------------------------------
+        // World Class definition
+        var WorldMap = function(options) {
+            var worldMap = {
+                // map object and descriptors
+                targetDiv: null,
+                mapDiv: {},
+                mapDimensions: {
+                    x: 10,
+                    y: 10
+                },
+                mapCoords: {
+                    x: 0,
+                    y: 0
+                },
+                mapData: [],
+
+                player: null,
+                enemies: [],
+
+                _objectCanMove: function(character, moveRequest) {
+                    var that = this;
+                    var targetX = character.characterCoords.x - moveRequest.left;
+                    var targetY = character.characterCoords.y - moveRequest.top;
+                    if (that.mapData[targetY] && that.mapData[targetY][targetX] < 5) {
+                        return true;
+                    }
+                    return false;
+                },
+                _getMoveRequestForRestrictObjectToBounds: function(character, moveRequest) {
+                    var that = this;
+                    var targetX = character.characterCoords.x - moveRequest.left;
+                    var targetY = character.characterCoords.y - moveRequest.top;
+
+                    var newLeft = (targetX > that.mapDimensions.x) ? that.mapDimensions.x : moveRequest.left;
+                    newLeft = (targetX < 0) ? 0 : moveRequest.left;
+                    var newTop = (targetY > that.mapDimensions.y) ? that.mapDimensions.y : moveRequest.top;
+                    newTop = (targetY < 0) ? 0 : moveRequest.top;
+                    return ({
+                        left: newLeft,
+                        top: newTop
+                    });
+                },
+
+                animate: function(moveRequest) {
+                    var that = this;
+                    moveRequest = that._getMoveRequestForRestrictObjectToBounds(that.player, moveRequest);
+                    if (that._objectCanMove(that.player, moveRequest)) {
+                        that.player.move(moveRequest);
+                        that.move(moveRequest);
+
+                    }
+                    for (var i = 0; i < that.enemies.length; i++) {
+                        var enemy = that.enemies[i];
+                        enemy.move(that._getMoveRequestForRestrictObjectToBounds(enemy, {
+                            left: Math.round(Math.random() * 2) - 1,
+                            top: Math.round(Math.random() * 2) - 1
+                        }));
+
+                    }
+                },
+                move: function(moveRequest) {
+                    var that = this;
+                    that.mapCoords.x += moveRequest.left;
+                    that.mapCoords.y += moveRequest.top;
+                    // apply css transform
+                    that.mapDiv.css('transform', 'translate(' + 32 * that.mapCoords.x + 'px,' + 32 * that.mapCoords.y + 'px)');
+
+                },
+                //private methods
+                _generate: function() {
+                    var that = this;
+                    that.mapData = [];
+                    for (var i = 0; i < that.mapDimensions.y; i++) {
+                        var line = [];
+                        for (var j = 0; j < that.mapDimensions.x; j++) {
+                            var value = Math.round(Math.random() * 4);
+                            line.push(value);
+                        }
+                        that.mapData.push(line);
+                    }
+                },
+                _init: function() {
+                    var that = this;
+                    (!that.mapData.length) && that._generate();
+                    var docFrag = document.createDocumentFragment();
+                    for (var i = 0; i < that.mapData.length; i++) {
+                        for (var j = 0; j < (that.mapData[i].length); j++) {
+                            var tile = document.createElement("div");
+                            tile.classList.add('floor-' + that.mapData[i][j]);
+                            docFrag.appendChild(tile);
+                        }
+                    }
+                    var mapContainer = that.targetDiv;
+                    that.mapDiv = $('<div class="map" style="width:'+ that.mapDimensions.x*32 +'px;height:'+ that.mapDimensions.y*32 +'px;">');
+                    mapContainer.append(that.mapDiv);
+                    that.mapDiv.append(docFrag);
+                },
+            };
+            $.extend(worldMap, options);
+            worldMap._init();
+            return worldMap;
+        }
+
+        // ------------------------------------------------
+        // CHARACTER
+
+        var Character = function(options) {
+            var character = {
+                characterDiv: {},
+                characterCoords: {
+                    x: 0,
+                    y: 0
+                },
+                moveRequest: {
+                    left: 0,
+                    top: 0,
+                    attack: 0
+                },
+                create: function() {
+                    var that = this;
+                    that.characterDiv = $('<div class="obj player">');
+
+                    // apply css transform
+                    that.characterDiv.css('transform', 'translate(' + 32 * that.characterCoords.x + 'px,' + 32 * that.characterCoords.y + 'px)');
+                    $('.map').first().append(this.characterDiv);
+                },
+
+                _lookAt: function(moveRequest) {
+                    var that = this;
+
+                    if (moveRequest.top == 0 && moveRequest.left == 0) {
+                        moveRequest = that.moveRequest;
+
+                    } else {
+                        that.moveRequest = moveRequest;
+
+                    }
+
+                    if (moveRequest.left == 0) {
+                        //this.characterDiv.removeClass('left right');
+                    } else {
+                        if (moveRequest.top == 0) {
+                            this.characterDiv.removeClass('up down');
+                        }
+                        this.characterDiv.removeClass('left right');
+                        this.characterDiv.addClass(((moveRequest.left > 0) ? ' left' : ' right'));
+                    }
+                    if (moveRequest.top == 0) {
+                        //this.characterDiv.removeClass('up down');
+                    } else {
+                        if (moveRequest.left == 0) {
+                            this.characterDiv.removeClass('left right');
+                        }
+                        this.characterDiv.removeClass('up down');
+                        this.characterDiv.addClass(((moveRequest.top > 0) ? ' up' : ' down'));
+
+                    }
+                },
+                move: function(moveRequest) {
+                    var that = this;
+                    that._lookAt(moveRequest);
+
+                    if (moveRequest.top == 0 && moveRequest.left == 0) {
+                        this.characterDiv.removeClass('running');
+                    } else {
+                        this.characterDiv.addClass('running');
+                        that.characterCoords.x -= moveRequest.left;
+                        that.characterCoords.y -= moveRequest.top;
+                        that.characterDiv.css('transform', 'translate(' + 32 * that.characterCoords.x + 'px,' + 32 * that.characterCoords.y + 'px)');
+                        //return true;
+                    }
+                    //return false;
+                }
+            };
+            $.extend(character, options);
+            character.create();
+            return character;
+        }
+        // ------------------------------------------------
+        // ENEMY
+        var Enemy = function(options) {
+            var enemyObj = new Character(options);
+            enemyObj.health = 20;
+            return enemyObj;
+        }
+
+        // ------------------------------------------------
+
+        // moverequest et gestion des inputs
+        var moveRequest = {
+            top: 0,
+            left: 0,
+            attack: 0
+        };
+
+        $('#viewport').on('keydown', function(e) {
+
+            switch (e.which) {
+                case 32:
+                    //fait un truc
+                    moveRequest.attack = 1;
+                    break;
+                case 37:
+                    //fait un truc
+                    moveRequest.left = 1;
+                    break;
+                case 38:
+                    //fait un truc
+                    moveRequest.top = 1;
+                    break;
+                case 39:
+                    //fait un truc
+                    moveRequest.left = -1;
+                    break;
+                case 40:
+                    //fait un truc
+                    moveRequest.top = -1;
+                    break;
+                default:
+                    return false;
+            }
+        })
+
+        // ------------------------------------------------
+
+        // creation et instanciation de la map
+        var currentMap = new WorldMap({
+            targetDiv: $('#world'),
+            mapDimensions: {
+                x: 20,
+                y: 20
+            }
+
+        });
+        // ajout du player dans la map
+        currentMap.player = new Character({
+            name: 'bob',
+            health: 80,
+            characterCoords: {
+                x: 5,
+                y: 5
+            }
+        });
+        // ajout des enemis dans la map
+        for (var i = 0; i < 10; i++) {
+            var enemyStats = {
+                name: 'batard',
+                characterCoords: {
+                    x: Math.round(Math.random() * 10),
+                    y: Math.round(Math.random() * 10),
+                }
+            };
+            var enemy = new Enemy(enemyStats);
+            currentMap.enemies.push(enemy);
+        }
+
+        // ------------------------------------------------
+        // gametick, repetition toutes les 100ms
+
+        var gameTick = function() {
+            currentMap.animate(moveRequest);
+
+            moveRequest = {
+                top: 0,
+                left: 0,
+                attack: 0
+            };
+
+        }
+
+        window.setInterval(function() {
+            gameTick()
+        }, 200);
+
+    });
+</script>
+</body>
+</html>

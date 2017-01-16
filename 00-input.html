@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poet</title>
+    <style>
+        #viewport {
+            width: 320px;
+            height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #viewport .player {
+            position: absolute;
+            /*transform: translate(-50%, -50%);*/
+            top: 0%;
+            left: 0%;
+        }
+
+        .player {
+            width: 32px;
+            height: 32px;
+            background: url(img/player.png);
+            background-position-y: -96px;
+            transition: transform .2s linear;
+        }
+
+        .enemy {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 20000;
+            background: #00ff00;
+            transition: all .2s ease;
+        }
+
+        @keyframes moving {
+            0% {
+                background-position-x: 0px;
+            }
+            100% {
+                background-position-x: -128px;
+            }
+        }
+
+        .player.left {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: 0px;
+        }
+
+        .player.right {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -32px;
+        }
+
+        .player.top {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -64px;
+        }
+
+        .player.bottom {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -96px;
+        }
+
+        #map {
+            position: relative;
+            left: 0;
+            top: 0;
+            width: 3200px;
+            height: 3200px;
+            transition: all .2s ease;
+        }
+
+        #map:after {
+            clear: both;
+            display: table;
+            content: '';
+        }
+
+        #map > div {
+            float: left;
+            width: 32px;
+            height: 32px;
+        }
+
+        #map > div:nth-child(100n) {
+            clear: right;
+        }
+
+        .floor-0 {
+            background: #ff0000;
+        }
+
+        .floor-1 {
+            background: #0000ff;
+        }
+    </style>
+</head>
+<body>
+
+<section id="viewport" tabindex="1">
+    <div id="map">
+        <div class="player"></div>
+    </div>
+</section>
+
+<script src="js/jquery-2.1.1.min.js"></script>
+<script>
+    (function () {
+        var player = $('.player');
+
+        var moveRequest = {
+            top: 0,
+            left: 0
+        };
+        var resetMoveRequest = function () {
+            moveRequest = {
+                top: 0,
+                left: 0
+            };
+        }
+
+        var mousemoveTimeout;
+
+
+        $("#viewport").on('keydown keyup mousemove', function (e) {
+
+            clearTimeout(mousemoveTimeout);
+            if ([37, 38, 39, 40].indexOf(e.which) != -1) {
+                switch (e.which) { // ou e.keyCode
+                    case 37:
+                        moveRequest.left = (e.type == "keydown") ? 1 : 0;
+                        break;
+                    case 38:
+                        moveRequest.top = (e.type == "keydown") ? 1 : 0;
+                        break;
+                    case 39:
+                        moveRequest.left = (e.type == "keydown") ? -1 : 0;
+                        break;
+                    case 40:
+                        moveRequest.top = (e.type == "keydown") ? -1 : 0;
+                        break;
+                }
+            }
+            if (e.type == "mousemove") {
+                moveRequest.left = (e.offsetX > player.position().left) ? -1 : 1;
+                moveRequest.top = (e.offsetY > player.position().top) ? -1 : 1;
+                mousemoveTimeout = setTimeout(resetMoveRequest, 200);
+            }
+        });
+
+
+        var gameTick = function () {
+            var nextX = player.position().left - (moveRequest.left * 32);
+            var nextY = player.position().top - (moveRequest.top * 32);
+            player.css('transform', 'translate(' + nextX + 'px,' + nextY + 'px)');
+
+        };
+
+        window.setInterval(gameTick, 200);
+
+    })(jQuery);
+</script>
+</body>
+</html>

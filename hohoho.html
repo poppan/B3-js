@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poet</title>
+    <style>
+        #viewport {
+            width: 320px;
+            height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #viewport .player {
+            position: absolute;
+            /*transform: translate(-50%, -50%);*/
+            top: 0%;
+            left: 0%;
+        }
+
+        .player {
+            width: 32px;
+            height: 32px;
+            background: url(img/player.png);
+            background-position-y: -96px;
+            transition: transform .2s ease;
+        }
+
+        .enemy {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 20000;
+            background: #00ff00;
+            transition: all .2s ease;
+        }
+
+        @keyframes moving {
+            0% {
+                background-position-x: 0px;
+            }
+            100% {
+                background-position-x: -128px;
+            }
+        }
+
+        .player.left {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: 0px;
+        }
+
+        .player.right {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -32px;
+        }
+
+        .player.top {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -64px;
+        }
+
+        .player.bottom {
+            animation: moving .2s steps(4) infinite;
+            background-position-y: -96px;
+        }
+
+        #map {
+            position: relative;
+            left: 0;
+            top: 0;
+            width: 3200px;
+            height: 3200px;
+            transition: all .2s ease;
+        }
+
+        #map:after {
+            clear: both;
+            display: table;
+            content: '';
+        }
+
+        #map > div {
+            float: left;
+            width: 32px;
+            height: 32px;
+        }
+
+        #map > div:nth-child(100n) {
+            clear: right;
+        }
+
+        .floor-0 {
+            background: #ff0000;
+        }
+
+        .floor-1 {
+            background: #0000ff;
+        }
+    </style>
+</head>
+<body>
+<!--
+<div style=" height:128px;">
+    <div class="player left"></div>
+    <div class="player right"></div>
+    <div class="player top"></div>
+    <div class="player bottom"></div>
+</div>
+-->
+<form id="playerForm">
+    <fieldset>
+        <label for="playerName">Player Name</label>
+        <input type="text" id="playerName" name="playerName">
+    </fieldset>
+    <fieldset>
+        <label for="playerHealth">Player Health</label>
+        <input type="range" id="playerHealth" name="playerHealth" min="20" max="100" step="1">
+    </fieldset>
+    <input type="submit">
+</form>
+<div id="viewport">
+    <div id="map" tabindex="1"></div>
+</div>
+
+
+<script src="js/jquery-2.1.1.min.js"></script>
+<script>
+    $(function () {
+
+
+        var Character = function (options) {
+            var character = {
+                divObject: {},
+                posX: 0,
+                posY: 0,
+                create: function () {
+                    this.divObject = $('<div class="player">');
+                    $('#map').append(this.divObject);
+                    this.divObject.css('transform', 'translate(' + 32 * this.posX + 'px,' + 32 * this.posY + 'px)');
+
+                },
+                move: function (moveRequest) {
+
+                    this.posX -= moveRequest.left;
+                    this.posY -= moveRequest.top;
+                    this.divObject.css('transform', 'translate(' + 32 * this.posX + 'px,' + 32 * this.posY + 'px)');
+
+                    this.divObject.removeClass('left right top bottom');
+                    if (moveRequest.left < 0) {
+                        this.divObject.addClass('right');
+                    }
+                    if (moveRequest.left > 0) {
+                        this.divObject.addClass('left');
+                    }
+                    if (moveRequest.top < 0) {
+                        this.divObject.addClass('bottom');
+                    }
+                    if (moveRequest.top > 0) {
+                        this.divObject.addClass('top');
+                    }
+                }
+            };
+            $.extend(character, options);
+            character.create();
+            return character;
+        }
+        var Enemy = function (options) {
+            options.create = function () {
+                this.divObject = $('<div class="enemy">');
+                $('#map').append(this.divObject);
+                this.divObject.css('transform', 'translate(' + 32 * this.posX + 'px,' + 32 * this.posY + 'px)');
+            };
+
+            var enemyObj = new Character(options);
+            enemyObj.health = 20;
+            return enemyObj;
+        }
+        $('#playerForm input[type="submit"]').on('click', function (e) {
+            e.preventDefault() && e.stopPropagation();
+            var playerStats = {
+                name: $('#playerName').val(),
+                health: parseInt($('#playerHealth').val())
+            };
+            player = new Character(playerStats);
+            console.log(player);
+
+        });
+
+
+        var map = [];
+        for (var i = 0; i < 100; i++) {
+            var line = [];
+            for (var j = 0; j < 100; j++) {
+                var value = (((Math.random()*5)>4)?1:0);
+                $('#map').append($('<div class="floor-' + value + '">'));
+                line.push(value);
+            }
+            map.push(line);
+        }
+
+
+        var playerStats = {
+            name: 'bob le hero',
+            health: 80,
+            posX: 8,
+            posY: 8
+        };
+        var player;
+        player = new Character(playerStats);
+
+        var enemies = [];
+
+        for (var i = 0; i < 10; i++) {
+            var enemyStats = {
+                name: 'batard',
+                posX: Math.round(Math.random() * 10),
+                posY: Math.round(Math.random() * 10)
+            };
+            var enemy = new Enemy(enemyStats);
+            enemies.push(enemy);
+        }
+
+
+        $('#map').on('keyup', function (e) {
+            /*
+             moveRequest = {
+             top:0,
+             left:0
+             };
+             */
+        });
+        var moveRequest = {
+            top: 0,
+            left: 0
+        };
+        $('#map').on('keydown', function (e) {
+            switch (e.which) {
+                case 37:
+                    //fait un truc
+                    moveRequest.left = 1;
+                    break;
+                case 38:
+                    //fait un truc
+                    moveRequest.top = 1;
+                    break;
+                case 39:
+                    //fait un truc
+                    moveRequest.left = -1;
+                    break;
+                case 40:
+                    //fait un truc
+                    moveRequest.top = -1;
+                    break;
+            }
+        })
+
+        var timer = 0;
+
+        var gameTick = function () {
+            timer++;
+            var mapDiv = $('#map');
+
+            if(timer % 3 == 0) {
+                for (var i = 0; i < enemies.length; i++) {
+                    var enemy = enemies[i];
+                    enemy.move({
+                        left: Math.round(Math.random() * 2) - 1,
+                        top: Math.round(Math.random() * 2) - 1
+                    });
+                }
+            }
+
+            //test position
+            var testPosX = (player.posX - moveRequest.left);
+            var testPosY = (player.posY - moveRequest.top)
+            console.log('lrtb !', "pPosX", player.posX, "testPosX", testPosX, "pPosY", player.posY, "testPosY", testPosY);
+
+            if (map[testPosY][testPosX] == 0) {
+
+                mapDiv.data({
+                    'top': (moveRequest.top) + ( parseInt(mapDiv.data('top')) || 0 ),
+                    'left': (moveRequest.left) + (parseInt(mapDiv.data('left')) || 0)
+                });
+                mapDiv.css('transform', 'translate(' + 32 * mapDiv.data('left') + 'px,' + 32 * mapDiv.data('top') + 'px)');
+
+                player.move(moveRequest);
+
+            }
+            for (var i = 0; i < enemies.length; i++) {
+                var enemy = enemies[i];
+                if ((player.posX == enemy.posX) && (player.posY == enemy.posY)) {
+                    enemy.posX = -1;
+                    enemy.posY = -1;
+                    console.log('woot');
+                    var audio = new Audio('mp3/prout.mp3');
+                    audio.play();
+                }
+            }
+            moveRequest = {
+                top: 0,
+                left: 0
+            };
+
+        }
+
+        window.setInterval(function () {
+            gameTick()
+        }, 100);
+
+    })
+    ;
+</script>
+</body>
+</html>
