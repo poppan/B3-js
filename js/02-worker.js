@@ -16,12 +16,12 @@ class Entity {
     }
 
 /*
-    set bearing(degree) {
-        this.bearing = degree;
+    set bearing(bearing) {
+        this.angle = bearing;
     }
 
     get bearing() {
-        return (this.bearing);
+        return (this.angle);
     }
 */
 
@@ -35,7 +35,7 @@ let moveRequest = {
 };
 
 // le tick
-let onmessage = function (event) {
+onmessage = function (event) {
     //console.log(event.data);
     moveRequest = event.data
 };
