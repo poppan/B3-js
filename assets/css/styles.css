@@ -7,8 +7,8 @@
 
 #viewport .player {
     position: absolute;
-    top: 0%;
-    left: 0%;
+    top: 0;
+    left: 0;
 }
 
 .player {
@@ -28,9 +28,14 @@
     transition: all .2s ease;
 }
 
+.hidden{
+    background: #ccffdd;
+    opacity : 0.5;
+}
+
 @keyframes moving {
     0% {
-        background-position-x: 0px;
+        background-position-x: 0;
     }
     100% {
         background-position-x: -128px;
@@ -39,7 +44,7 @@
 
 .player.left {
     animation: moving .2s steps(4) infinite;
-    background-position-y: 0px;
+    background-position-y: 0;
 }
 
 .player.right {
