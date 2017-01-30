@@ -81,9 +81,9 @@ onmessage = function (event) {
 };
 
 
-let isCloseTo = function(entity) {
-    entity.isHidden = !(Math.abs(entity.x - entities[0].x) <= 3 && Math.abs(entity.y - entities[0].y) <= 3);
-    return entity.isHidden;
+let isNearby = function(entity) {
+    entity.isNearby = (Math.abs(entity.x - entities[0].x) <= 3 && Math.abs(entity.y - entities[0].y) <= 3);
+    return entity.isNearby;
 };
 
 let gameTick = function () {
@@ -99,7 +99,7 @@ let gameTick = function () {
                 break;
         }
     }
-    entities.filter(isCloseTo);
+    entities.filter(isNearby);
 
     postMessage(entities);
 

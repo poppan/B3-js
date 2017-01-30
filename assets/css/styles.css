@@ -1,8 +1,29 @@
 #viewport {
-    width: 320px;
-    height: 320px;
+    width: 1000px;
+    height: 600px;
     overflow: hidden;
     position: relative;
+    background-image:
+            url(../img/bg-03.png),
+            url(../img/bg-02.png),
+            url(../img/bg-01.png),
+            url(../img/bg-00.jpg);
+    background-size:cover;
+    animation: backgroundscroll 50s linear infinite;
+}
+#viewport:after {
+    content:"";
+    display:block;
+    width: 1000px;
+    height: 600px;
+    overflow: hidden;
+    position: absolute;
+    top:0;
+    left:0;
+    background-image:
+            url(../img/bg-04.png);
+    background-size:cover;
+    animation: backgroundscroll 50s linear infinite;
 }
 
 #viewport .player {
@@ -23,14 +44,31 @@
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 20000;
-    background: #00ff00;
-    transition: all .2s ease;
+    transition: all .3s ease;
+}
+.enemy:after {
+    content:"";
+    display:block;
+    width:8px;
+    height:8px;
+    top: 0;
+    left: 0;
+    background: #999;
+    border-radius:50%;
 }
 
-.hidden{
-    background: #ccffdd;
-    opacity : 0.5;
+.enemy.nearby:after{
+    background: #f00;
+    transform:scale(1.8);
+}
+
+@keyframes backgroundscroll {
+    0% {
+        background-position-x: 0;
+    }
+    100% {
+        background-position-x: 100%;
+    }
 }
 
 @keyframes moving {

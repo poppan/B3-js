@@ -57,9 +57,9 @@ console.log(message);
             if($("#"+ entity.id).length == 0){
                 $('#map').append($('<div id="'+ entity.id +'" class="'+ entity.class +'">'));
             }
-            $("#"+ entity.id).removeClass('left right top bottom hidden');
+            $("#"+ entity.id).removeClass('left right top bottom nearby');
             $("#"+ entity.id).addClass(entity.angle);
-            $("#"+ entity.id).addClass((entity.isHidden)?'hidden':'');
+            $("#"+ entity.id).addClass((entity.isNearby)?'nearby':'');
             $("#"+ entity.id).css('transform', 'translate(' + entity.x*32 + 'px,' + entity.y*32 + 'px)');
         }
     };
