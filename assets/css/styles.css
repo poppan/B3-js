@@ -91,6 +91,22 @@
     transition: transform .1s linear;
     transform:scale(2);
 }
+.ghost {
+    width: 32px;
+    height: 32px;
+    transition: transform .1s linear;
+}
+.ghost:before {
+    content:"";
+    display:block;
+    width: 32px;
+    height: 32px;
+    background: url(../img/tako.png);
+    background-position-y: -96px;
+    transition: transform .1s linear;
+    transform:scale(2);
+    opacity:0.5;
+}
 @keyframes moving {
     0% {
         background-position-x: 0;
