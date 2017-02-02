@@ -1,50 +1,63 @@
 #viewport {
-    width: 1000px;
-    height: 600px;
-    overflow: hidden;
+    width: 640px;
+    height: 480px;
     position: relative;
+    overflow:hidden;
+}
+#viewport:before {
+    content:"";
+    overflow: hidden;
+    position: absolute;
+    display:block;
+    width: 640px;
+    height: 480px;
+    top:0;
+    left:0;
     background-image:
             url(../img/bg-03.png),
             url(../img/bg-02.png),
             url(../img/bg-01.png),
             url(../img/bg-00.jpg);
     background-size:cover;
-    animation: backgroundscroll 50s linear infinite;
+    background-repeat: repeat-x;
+    animation: backgroundscroll 15s linear infinite;
 }
 #viewport:after {
     content:"";
     display:block;
-    width: 1000px;
-    height: 600px;
+    width: 640px;
+    height: 480px;
     overflow: hidden;
     position: absolute;
     top:0;
     left:0;
-    background-image:
-            url(../img/bg-04.png);
-    background-size:cover;
-    animation: backgroundscroll 50s linear infinite;
-}
+    background-image: url(../img/bg-04.png);
 
+    background-size:cover;
+    background-repeat: repeat-x;
+    animation: backgroundscroll 15s linear infinite;
+}
+@keyframes backgroundscroll {
+    0% {
+        background-position-x: 0;
+    }
+    100% {
+        background-position-x: calc(100% - 640px);
+    }
+}
 #viewport .player {
     position: absolute;
     top: 0;
     left: 0;
 }
 
-.player {
-    width: 32px;
-    height: 32px;
-    background: url(../img/player.png);
-    background-position-y: -96px;
-    transition: transform .2s linear;
-}
+
 
 .enemy {
     position: absolute;
     top: 0;
     left: 0;
-    transition: all .3s ease;
+    transition: all .1s ease;
 }
 .enemy:after {
     content:"";
@@ -62,15 +75,22 @@
     transform:scale(1.8);
 }
 
-@keyframes backgroundscroll {
-    0% {
-        background-position-x: 0;
-    }
-    100% {
-        background-position-x: 100%;
-    }
-}
 
+.player {
+    width: 32px;
+    height: 32px;
+    transition: transform .1s linear;
+}
+.player:before {
+    content:"";
+    display:block;
+    width: 32px;
+    height: 32px;
+    background: url(../img/tako.png);
+    background-position-y: -96px;
+    transition: transform .1s linear;
+    transform:scale(2);
+}
 @keyframes moving {
     0% {
         background-position-x: 0;
@@ -80,23 +100,23 @@
     }
 }
 
-.player.left {
-    animation: moving .2s steps(4) infinite;
+.player.left:before {
+    animation: moving 1.2s steps(4) infinite;
     background-position-y: 0;
 }
 
-.player.right {
-    animation: moving .2s steps(4) infinite;
+.player.right:before {
+    animation: moving 1.2s steps(4) infinite;
     background-position-y: -32px;
 }
 
-.player.top {
-    animation: moving .2s steps(4) infinite;
+.player.top:before {
+    animation: moving 1.2s steps(4) infinite;
     background-position-y: -64px;
 }
 
-.player.bottom {
-    animation: moving .2s steps(4) infinite;
+.player.bottom:before {
+    animation: moving 1.2s steps(4) infinite;
     background-position-y: -96px;
 }
 

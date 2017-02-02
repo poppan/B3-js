@@ -19,8 +19,8 @@ class Entity {
         this.x -= moveRequest.left;
         this.y -= moveRequest.top;
 
-        this.x = Math.max(Math.min(this.x, 30), 0);
-        this.y = Math.max(Math.min(this.y, 30), 0);
+        this.x = Math.max(Math.min(this.x, 640/8), 0);
+        this.y = Math.max(Math.min(this.y, 480/8), 0);
 
 
         if (moveRequest.left < 0) {
@@ -54,8 +54,8 @@ class Enemy extends Entity{
         this.x += Math.round(Math.random()*2) -1;
         this.y += Math.round(Math.random()*2) -1;
 
-        this.x = Math.max(Math.min(this.x, 30), 0);
-        this.y = Math.max(Math.min(this.y, 30), 0);
+        this.x = Math.max(Math.min(this.x, 640/8), 0);
+        this.y = Math.max(Math.min(this.y, 480/8), 0);
     }
 }
 
@@ -70,20 +70,40 @@ let entities = [];
 // hop on ajoute le player
 entities.push(new Entity('player', 5, 5));
 // hop on ajoute des enemies dans le tableau
-for (let i=0; i < 10; i++){
-    entities.push(new Enemy('enemy', 5, 5));
+for (let i=0; i < 25; i++){
+    entities.push(new Enemy('enemy', Math.round(Math.random()*640/8), Math.round(Math.random()*480/8)));
 }
 
 // le tick
 onmessage = function (event) {
     //console.log(event.data);
-    moveRequest = event.data
+    moveRequest = event.data;
+    //gameTick();
 };
 
 
 let isNearby = function(entity) {
-    entity.isNearby = (Math.abs(entity.x - entities[0].x) <= 3 && Math.abs(entity.y - entities[0].y) <= 3);
-    return entity.isNearby;
+    switch(entity.class){
+        case "player":
+            break;
+            return true;
+        case "enemy":
+            entity.isNearby = (Math.abs(entity.x - entities[0].x) <= 3 && Math.abs(entity.y - entities[0].y) <= 3);
+            return entity.isNearby;
+            break;
+    }
+
+};
+
+let isOnPlayer = function(entity) {
+    switch(entity.class){
+        case "player":
+            return true;
+            break;
+        case "enemy":
+            return !(Math.abs(entity.x - entities[0].x) <= 1 && Math.abs(entity.y - entities[0].y) <= 1);
+            break;
+    }
 };
 
 let gameTick = function () {
@@ -99,14 +119,11 @@ let gameTick = function () {
                 break;
         }
     }
+    // highlight si proche
     entities.filter(isNearby);
-
+    //supprime si sur le player
+    entities = entities.filter(isOnPlayer);
     postMessage(entities);
-
-    moveRequest = {
-        top: 0,
-        left: 0
-    };
 };
 
-self.setInterval(gameTick, 100);
+self.setInterval(gameTick, 16);
