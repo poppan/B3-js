@@ -114,23 +114,39 @@
 
     mainFirebaseApp.database().ref('players/').orderByChild("ts").limitToLast(2)
         .on('value', function (snapshot) {
+
+            let fbPlayers = snapshot.val();
+
+            /*
+            // pour mapper un object dans un tableau
+
+            // approche boucle
             let ghosts = [];
-            let firebasePlayers = [];
-            for (let entityId in snapshot.val()) {
-                let ghost = snapshot.val()[entityId];
+            for (let prop in fbPlayers) {
+                let ghost = fbPlayers[prop];
                 ghost.class = "ghost";
                 ghosts.push(ghost);
             }
+
+             */
+            // ou via assignation en ES6
+            for (let prop in fbPlayers) {
+                fbPlayers[prop].class = "ghost";
+            }
+            let ghosts = Object.keys(fbPlayers).map(key => fbPlayers[key]);
+
             let all =  entities.concat(ghosts);
             for (let entity of all) {
                 let currentEntity = $("#" + entity.id);
                 if (currentEntity.length == 0) {
                     $('#map').append($('<div id="' + entity.id + '" class="' + entity.class + '">'));
                 }
-                currentEntity.removeClass('left right top bottom nearby');
-                currentEntity.addClass(entity.angle);
-                currentEntity.addClass((entity.isNearby) ? 'nearby' : '');
-                currentEntity.css('transform', 'translate(' + entity.x * 8 + 'px,' + entity.y * 8 + 'px)');
+                currentEntity
+                    .css('transform', 'translate(' + entity.x * 8 + 'px,' + entity.y * 8 + 'px)')
+                    .removeClass('left right top bottom nearby')
+                    .addClass(entity.angle)
+                    .addClass((entity.isNearby) ? 'nearby' : '');
+
             }
         });
 
